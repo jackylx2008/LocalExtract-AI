@@ -39,6 +39,13 @@ def format_result_log(text: str, width: int, height: int) -> str:
     return f"识别结果（截图 {width}×{height}）\n{divider}\n{text}\n{divider}"
 
 
+def log_task_failure(error: Exception, target_logger: logging.Logger | None = None) -> None:
+    """记录适合用户阅读的任务失败摘要，不输出异常调用栈。"""
+    logger = target_logger or logging.getLogger(__name__)
+    logger.error("截图识别失败")
+    logger.error("%s", error)
+
+
 class LocalExtractApp:
     POLL_MS = 80
 
@@ -193,7 +200,7 @@ class LocalExtractApp:
         except TaskCancelled as exc:
             self.messages.put(UIMessage("cancelled", str(exc)))
         except Exception as exc:
-            logging.getLogger(__name__).exception("截图识别失败")
+            log_task_failure(exc)
             self.messages.put(UIMessage("failed", str(exc)))
 
     def _cancel(self) -> None:
