@@ -1,0 +1,18 @@
+app:
+  log_level: "${LOG_LEVEL:-INFO}"
+  window_title: "LocalExtract AI"
+  max_gui_log_lines: 1000
+
+ai:
+  base_url: "${LOCAL_AI_BASE_URL:-http://127.0.0.1:8080/v1}"
+  api_key: "${LOCAL_AI_API_KEY:-local}"
+  model: "${LOCAL_AI_MODEL:-local-model}"
+  timeout_seconds: 60
+
+flows:
+  extract_clipboard:
+    prompt: >-
+      识别图片中的文字，只输出具有辨识价值的特征字符串，例如编号、序列号、
+      设备标识、订单号、版本号、日期时间、网址、邮箱或其他结构化标识。
+      每行输出一个字符串，不要解释，不要添加序号、Markdown 或代码块。
+    output_separator: "\n"
