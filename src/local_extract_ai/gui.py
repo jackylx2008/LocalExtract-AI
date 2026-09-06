@@ -33,6 +33,12 @@ class QueueLogHandler(logging.Handler):
         self.messages.put(UIMessage("log", (record.levelname, self.format(record))))
 
 
+def format_result_log(text: str, width: int, height: int) -> str:
+    """将识别结果整理为适合实时输出区域显示的区块。"""
+    divider = "─" * 48
+    return f"识别结果（截图 {width}×{height}）\n{divider}\n{text}\n{divider}"
+
+
 class LocalExtractApp:
     POLL_MS = 80
 
@@ -225,7 +231,8 @@ class LocalExtractApp:
         elif message.kind == "completed":
             result = message.payload
             self._finish("完成", f"已复制 {len(result.text)} 个字符", 100)
-            self._append_log(f"识别成功（截图 {result.width}×{result.height}），结果已写入剪贴板", "SUCCESS")
+            self._append_log(format_result_log(result.text, result.width, result.height), "SUCCESS")
+            self._append_log("识别结果已写入剪贴板", "SUCCESS")
         elif message.kind == "cancelled":
             self._finish("已取消", str(message.payload), self.progress_var.get())
         elif message.kind == "failed":
