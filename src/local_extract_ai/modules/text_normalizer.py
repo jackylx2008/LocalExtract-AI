@@ -15,6 +15,7 @@ def normalize_extracted_text(raw: str, separator: str = "\n") -> str:
         value = line.strip()
         if value.startswith(("- ", "* ", "• ")):
             value = value[2:].strip()
+        value = value.replace("<TAB>", "\t").replace("\\t", "\t")
         if value and value not in cleaned:
             cleaned.append(value)
     return separator.join(cleaned)
