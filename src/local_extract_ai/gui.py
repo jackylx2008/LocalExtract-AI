@@ -64,7 +64,7 @@ class LocalExtractApp:
     def _build_ui(self) -> None:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=3)
-        self.root.rowconfigure(1, weight=2)
+        self.root.rowconfigure(2, weight=2)
 
         notebook = ttk.Notebook(self.root)
         notebook.grid(row=0, column=0, sticky="nsew", padx=10, pady=(10, 5))
@@ -75,8 +75,24 @@ class LocalExtractApp:
         self._build_extract_tab(extract_tab)
         self._build_config_tab(config_tab)
 
+        action_frame = ttk.LabelFrame(self.root, text="任务操作", padding=(10, 8))
+        action_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=5)
+        action_frame.columnconfigure(1, weight=1)
+        self.preview_button = ttk.Button(action_frame, text="参数预览", command=self._preview)
+        self.preview_button.grid(row=0, column=0, padx=(0, 8))
+        self.start_button = ttk.Button(
+            action_frame,
+            text="开始识别",
+            command=self._start_extraction,
+            width=24,
+            state=tk.DISABLED,
+        )
+        self.start_button.grid(row=0, column=1, padx=8)
+        self.cancel_button = ttk.Button(action_frame, text="取消任务", command=self._cancel, state=tk.DISABLED)
+        self.cancel_button.grid(row=0, column=2, padx=(8, 0))
+
         log_frame = ttk.LabelFrame(self.root, text="运行日志与实时输出", padding=(8, 6))
-        log_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
+        log_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
         log_frame.columnconfigure(0, weight=1)
         log_frame.rowconfigure(0, weight=1)
         self.log_text = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, state=tk.DISABLED, font=("Consolas", 10))
@@ -88,7 +104,7 @@ class LocalExtractApp:
         ttk.Button(log_frame, text="清空日志", command=self._clear_log).grid(row=1, column=0, sticky="e", pady=(6, 0))
 
         status = ttk.Frame(self.root, padding=(10, 4, 10, 8))
-        status.grid(row=2, column=0, sticky="ew")
+        status.grid(row=3, column=0, sticky="ew")
         status.columnconfigure(0, weight=1)
         ttk.Progressbar(status, variable=self.progress_var, maximum=100).grid(row=0, column=0, columnspan=4, sticky="ew", pady=(0, 5))
         ttk.Label(status, textvariable=self.status_var).grid(row=1, column=0, sticky="w")
@@ -106,15 +122,6 @@ class LocalExtractApp:
         ttk.Label(tab, text="操作说明").grid(row=2, column=0, sticky="nw", pady=6)
         instructions = "1. 使用 Win+Shift+S 截图\n2. 回到此窗口点击“开始识别”\n3. 识别结果会替换剪贴板内容，可直接粘贴"
         ttk.Label(tab, text=instructions, justify=tk.LEFT).grid(row=2, column=1, sticky="w", pady=6)
-
-        buttons = ttk.Frame(tab)
-        buttons.grid(row=3, column=0, columnspan=2, sticky="w", pady=(18, 0))
-        self.preview_button = ttk.Button(buttons, text="参数预览", command=self._preview)
-        self.preview_button.grid(row=0, column=0, padx=(0, 8))
-        self.start_button = ttk.Button(buttons, text="开始识别", command=self._start_extraction, state=tk.DISABLED)
-        self.start_button.grid(row=0, column=1, padx=8)
-        self.cancel_button = ttk.Button(buttons, text="取消任务", command=self._cancel, state=tk.DISABLED)
-        self.cancel_button.grid(row=0, column=2, padx=8)
 
     def _build_config_tab(self, tab: ttk.Frame) -> None:
         tab.columnconfigure(1, weight=1)
