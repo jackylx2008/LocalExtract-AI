@@ -23,7 +23,7 @@ def load_config(
         env_files = (env_file,) if isinstance(env_file, Path) else env_file
         for path in env_files:
             _load_env_file(path)
-    _alias_openai_api_key()
+    _alias_local_ai_api_key()
     _select_cloudstation_root()
     path = config_file.expanduser().resolve()
     if not path.is_file():
@@ -68,7 +68,12 @@ def _select_cloudstation_root() -> None:
             os.environ["CLOUDSTATION_ROOT"] = str(Path(value).expanduser())
 
 
-def _alias_openai_api_key() -> None:
-    """兼容本地服务配置中常见的 OPENAI_API_KEY 名称。"""
-    if not os.environ.get("LOCAL_AI_API_KEY") and os.environ.get("OPENAI_API_KEY"):
-        os.environ["LOCAL_AI_API_KEY"] = os.environ["OPENAI_API_KEY"]
+def _alias_local_ai_api_key() -> None:
+    """将常见的本地 AI 密钥变量名映射为项目统一变量。"""
+    if os.environ.get("LOCAL_AI_API_KEY"):
+        return
+    for alias in ("LLAMACPP_API_KEY", "OPENAI_API_KEY"):
+        value = os.environ.get(alias)
+        if value:
+            os.environ["LOCAL_AI_API_KEY"] = value
+            return

@@ -37,7 +37,7 @@ LOCAL_AI_API_KEY=local
 LOCAL_AI_MODEL=local-model
 ```
 
-API key 也兼容常见的 `OPENAI_API_KEY` 变量名。调用本地 AI 时会通过 `Authorization: Bearer <API key>` 请求头发送，密钥本身不会写入日志或显示在界面中。
+API key 支持 `LOCAL_AI_API_KEY`、`LLAMACPP_API_KEY` 和 `OPENAI_API_KEY` 变量名。调用本地 AI 时会通过 `Authorization: Bearer <API key>` 请求头发送，密钥本身不会写入日志或显示在界面中。启动验证会依次检查 `/health` 和需要鉴权的 `/v1/models`，鉴权失败时不会启用识别按钮。
 
 `LOCAL_AI_BASE_URL` 应包含 `/v1`。识别提示词和输出分隔符在 `config.yaml` 的 `flows.extract_clipboard` 下配置。
 

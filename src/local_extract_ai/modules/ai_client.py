@@ -28,13 +28,16 @@ class LocalAIClient:
         self.base_url = settings.base_url.rstrip("/")
 
     def verify(self) -> str:
-        """通过无需模型推理的健康端点验证服务可访问。"""
+        """验证服务健康状态以及 API key 鉴权。"""
         health_url = self.base_url[:-3] if self.base_url.endswith("/v1") else self.base_url
         payload = self._request_url("GET", f"{health_url}/health")
         status = str(payload.get("status", "")).lower()
         if status not in {"ok", "ready", "idle"}:
             raise AIServiceError(f"本地 AI 尚未就绪：{payload.get('status', '未知状态')}")
-        return "本地 AI 正常"
+        models_payload = self._request("GET", "/models")
+        models = models_payload.get("data", [])
+        count = len(models) if isinstance(models, list) else 0
+        return f"本地 AI 正常，鉴权通过（可用模型 {count} 个）"
 
     def extract(self, png_bytes: bytes, prompt: str) -> str:
         image_data = base64.b64encode(png_bytes).decode("ascii")
@@ -74,6 +77,10 @@ class LocalAIClient:
                 result = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")[:500]
+            if exc.code in {401, 403}:
+                raise AIServiceError(
+                    "本地 AI 服务鉴权失败，请检查 common.env 中的 API key"
+                ) from exc
             raise AIServiceError(f"本地 AI 请求失败（HTTP {exc.code}）：{detail}") from exc
         except (URLError, TimeoutError, OSError) as exc:
             raise AIServiceError(f"无法连接本地 AI：{exc}") from exc

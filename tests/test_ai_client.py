@@ -24,13 +24,18 @@ def test_verify_uses_health_endpoint(monkeypatch):
 
     def fake_open(request, **_kwargs):
         requests.append(request.full_url)
-        return FakeResponse({"status": "ok"})
+        if request.full_url.endswith("/health"):
+            return FakeResponse({"status": "ok"})
+        return FakeResponse({"data": [{"id": "demo"}]})
 
     monkeypatch.setattr("local_extract_ai.modules.ai_client.urlopen", fake_open)
     client = LocalAIClient(AISettings("http://127.0.0.1:8080/v1", "local", "demo"))
 
-    assert client.verify() == "本地 AI 正常"
-    assert requests == ["http://127.0.0.1:8080/health"]
+    assert client.verify() == "本地 AI 正常，鉴权通过（可用模型 1 个）"
+    assert requests == [
+        "http://127.0.0.1:8080/health",
+        "http://127.0.0.1:8080/v1/models",
+    ]
 
 
 def test_extract_reads_assistant_content(monkeypatch):
