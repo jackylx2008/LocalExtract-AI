@@ -19,3 +19,16 @@ def test_env_file_does_not_override_process_environment(tmp_path, monkeypatch):
     config_file.write_text('app:\n  value: "${SAMPLE_SETTING}"\n', encoding="utf-8")
 
     assert load_config(config_file, env_file)["app"]["value"] == "process"
+
+
+def test_loads_dotenv_and_aliases_openai_api_key(tmp_path, monkeypatch):
+    monkeypatch.delenv("LOCAL_AI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    dotenv = tmp_path / ".env"
+    dotenv.write_text("OPENAI_API_KEY=test-secret\n", encoding="utf-8")
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text('ai:\n  api_key: "${LOCAL_AI_API_KEY}"\n', encoding="utf-8")
+
+    config = load_config(config_file, env_file=(dotenv, tmp_path / "common.env"))
+
+    assert config["ai"]["api_key"] == "test-secret"

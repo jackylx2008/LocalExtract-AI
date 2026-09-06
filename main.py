@@ -5,8 +5,8 @@
   并将提取结果写回剪贴板。本工具不会启动或管理本地 AI 服务。
 
 配置文件：
-  默认读取项目根目录的 config.yaml；可由 common.env 或进程环境变量覆盖本地
-  AI 地址、模型、密钥和日志级别。
+  默认读取项目根目录的 config.yaml；可由 .env、common.env 或进程环境变量覆盖
+  本地 AI 地址、模型、密钥和日志级别。
 
 可选参数：
   --config-file   配置文件路径，默认使用项目根目录下的 config.yaml。
@@ -48,7 +48,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     configure_utf8_stdio()
     args = parse_args()
-    config = load_config(args.config_file, env_file=PROJECT_ROOT / "common.env")
+    config = load_config(
+        args.config_file,
+        env_file=(PROJECT_ROOT / ".env", PROJECT_ROOT / "common.env"),
+    )
     setup_logger(config["app"]["log_level"])
     logger = get_logger(__name__)
     logger.info("启动 LocalExtract AI")

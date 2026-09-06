@@ -35,7 +35,14 @@ def test_verify_uses_health_endpoint(monkeypatch):
 
 def test_extract_reads_assistant_content(monkeypatch):
     response = {"choices": [{"message": {"content": "ABC-123"}}]}
-    monkeypatch.setattr("local_extract_ai.modules.ai_client.urlopen", lambda *_args, **_kwargs: FakeResponse(response))
-    client = LocalAIClient(AISettings("http://127.0.0.1:8080/v1", "local", "demo"))
+    authorization = []
+
+    def fake_open(request, **_kwargs):
+        authorization.append(request.get_header("Authorization"))
+        return FakeResponse(response)
+
+    monkeypatch.setattr("local_extract_ai.modules.ai_client.urlopen", fake_open)
+    client = LocalAIClient(AISettings("http://127.0.0.1:8080/v1", "test-secret", "demo"))
 
     assert client.extract(b"png", "extract") == "ABC-123"
+    assert authorization == ["Bearer test-secret"]

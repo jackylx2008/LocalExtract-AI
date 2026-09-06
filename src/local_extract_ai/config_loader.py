@@ -6,6 +6,7 @@ import os
 import platform
 import re
 from pathlib import Path
+from collections.abc import Iterable
 from typing import Any
 
 import yaml
@@ -13,10 +14,16 @@ import yaml
 ENV_PATTERN = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}")
 
 
-def load_config(config_file: Path, env_file: Path | None = None) -> dict[str, Any]:
+def load_config(
+    config_file: Path,
+    env_file: Path | Iterable[Path] | None = None,
+) -> dict[str, Any]:
     """读取 YAML 配置，展开环境变量并返回字典。"""
     if env_file:
-        _load_env_file(env_file)
+        env_files = (env_file,) if isinstance(env_file, Path) else env_file
+        for path in env_files:
+            _load_env_file(path)
+    _alias_openai_api_key()
     _select_cloudstation_root()
     path = config_file.expanduser().resolve()
     if not path.is_file():
@@ -59,3 +66,9 @@ def _select_cloudstation_root() -> None:
         value = os.environ.get(f"CLOUDSTATION_ROOT_{suffix}")
         if value:
             os.environ["CLOUDSTATION_ROOT"] = str(Path(value).expanduser())
+
+
+def _alias_openai_api_key() -> None:
+    """兼容本地服务配置中常见的 OPENAI_API_KEY 名称。"""
+    if not os.environ.get("LOCAL_AI_API_KEY") and os.environ.get("OPENAI_API_KEY"):
+        os.environ["LOCAL_AI_API_KEY"] = os.environ["OPENAI_API_KEY"]
