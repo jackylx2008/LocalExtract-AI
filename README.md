@@ -1,6 +1,6 @@
 # LocalExtract AI
 
-LocalExtract AI 是一个 Windows 桌面工具：读取剪贴板中的截图，通过已经启动的本地多模态 AI 提取特征字符串，并把结果写回剪贴板。应用不会启动、停止或修改本地 AI 服务。
+LocalExtract AI 是一个 Windows 桌面工具：读取剪贴板中的截图，通过已经启动的本地多模态 AI 提取特征字符串，在窗口中显示完整识别结果，并把结果写回剪贴板。应用不会启动、停止或修改本地 AI 服务。
 
 ## 功能
 
@@ -9,6 +9,13 @@ LocalExtract AI 是一个 Windows 桌面工具：读取剪贴板中的截图，�
 - 调用 `/v1/chat/completions` 识别编号、序列号、版本号、网址等特征字符串。
 - 清理 Markdown 包装、空行和重复项后，在“运行日志与实时输出”区域显示完整识别结果，并将文本写回 Windows 剪贴板。
 - 后台执行网络请求，GUI 保持响应；支持安全取消、实时日志和状态显示。
+
+## 界面
+
+- “截图识别”选项卡显示输入来源、AI 状态和操作说明。
+- “全局配置”选项卡显示当前服务地址、模型和超时时间，不显示 API key。
+- “参数预览”“开始识别”“取消任务”位于固定任务操作栏，切换选项卡后仍然可见。
+- “运行日志与实时输出”区域显示任务过程以及带分隔线的完整识别结果。
 
 ## 环境与安装
 
@@ -45,7 +52,8 @@ python main.py
 1. 先启动本地 AI 服务。
 2. 启动本工具，等待界面显示“本地 AI 正常”。
 3. 使用 `Win+Shift+S` 截图。
-4. 点击“开始识别”。完成后直接到目标位置粘贴结果。
+4. 点击固定任务操作栏中的“开始识别”。
+5. 在“运行日志与实时输出”区域查看完整结果；结果也已写入剪贴板，可直接粘贴到目标位置。
 
 日志保存在 `logs/main.log`，单文件最大 10 MB，保留 5 份备份。
 
@@ -58,6 +66,8 @@ python -m compileall main.py flows src tests
 
 测试使用模拟网络响应和临时配置，不访问真实本地 AI，也不修改真实剪贴板。
 
+测试产生的 `.pytest_cache/`、`.pytest_tmp/`、`.pytest-results/` 等目录统一由 `.gitignore` 中的 `.pytest*/` 规则排除；该规则同样适用于项目任意子目录。
+
 ## 项目结构
 
 - `main.py`：唯一应用入口，加载配置、初始化日志和 GUI。
@@ -69,4 +79,16 @@ python -m compileall main.py flows src tests
 
 ## GitHub 同步
 
-提交前检查 `git status --short --ignored`，确认没有提交 `common.env`、日志、截图或其他隐私数据。远端优先使用 SSH；首次初始化仓库后再按实际仓库地址添加 `origin`。
+GitHub 仓库：<https://github.com/jackylx2008/LocalExtract-AI>
+
+项目使用 SSH 远端：
+
+```text
+git@github.com:jackylx2008/LocalExtract-AI.git
+```
+
+提交前运行 `git status --short --ignored`，确认没有提交 `.env`、`common.env`、日志、截图、pytest 临时目录或其他隐私数据。检查无误后推送：
+
+```powershell
+git push origin main
+```
